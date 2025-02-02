@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anythingllm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: anythingllm
+  template:
+    metadata:
+      labels:
+        app: anythingllm
+    spec:
+      serviceAccountName: anythingllm
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+        runAsUser: 1000920000
+        runAsGroup: 0
+        fsGroup: 1000920000
+      containers:
+      - name: anythingllm
+        image: quay.io/rh-aiservices-bu/anythingllm-workbench:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3001
+          name: http
+          protocol: TCP
+        - containerPort: 8889
+          name: collector
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: ANYTHING_LLM_RUNTIME
+          value: "docker"
+        - name: DISABLE_TELEMETRY
+          value: "true"
+        resources:
+          limits:
+            cpu: "2"
+            memory: 4Gi
+          requests:
+            cpu: "500m"
+            memory: 1Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+        readinessProbe:
+          tcpSocket:
+            port: 3001
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 3001
+          initialDelaySeconds: 120
+          periodSeconds: 20

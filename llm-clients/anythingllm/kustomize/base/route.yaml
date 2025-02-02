@@ -1,0 +1,15 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: anythingllm
+  namespace: anythingllm
+spec:
+  port:
+    targetPort: 3001
+  to:
+    kind: Service
+    name: anythingllm
+    weight: 100
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
